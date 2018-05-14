@@ -3,9 +3,9 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <memory>
 #include <variant>
-#include <iostream>
 
 struct my_vector {
    public:
@@ -30,11 +30,13 @@ struct my_vector {
     void pop_back();
     void push_back(uint value);
     uint back() const;
-    void reverse();
+
+    uint* begin();
+    uint* end();
 
     friend bool operator==(const my_vector& a, const my_vector& b);
 
-    void swap(my_vector& other);
+    void swap(my_vector& other) noexcept;
 
    private:
     static const size_t SMALL_SIZE = 4;
@@ -43,27 +45,29 @@ struct my_vector {
     bool is_big;
 
     struct big_data {
-        std::shared_ptr<uint> pointer;
+        std::shared_ptr<uint[]> pointer;
         size_t capacity;
 
         big_data(uint* p, size_t cap) : pointer(p), capacity(cap) {}
 
-        big_data(const big_data& other) : pointer(other.pointer), capacity(other.capacity) {}
+        big_data(const big_data& other)
+            : pointer(other.pointer), capacity(other.capacity) {}
     };
 
     union any_data {
         big_data big;
-        uint small[SMALL_SIZE];
+        uint small[SMALL_SIZE]{};
 
-        any_data(): small{} {}
-
+        any_data() {}
         ~any_data() {}
     } data;
 
     uint* actual_data;
 
     size_t get_capacity() { return is_big ? data.big.capacity : SMALL_SIZE; }
-    void swap_diff(any_data &big, any_data &small);
+    void swap_diff(any_data& big, any_data& small) noexcept;
+
+    void prepare();
 };
 
 #endif

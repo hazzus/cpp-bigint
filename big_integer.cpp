@@ -570,11 +570,8 @@ big_integer operator>>(big_integer a, int b) {
                 << (DIGIT_CAPACITY - shift_digit);
         res.push_back(interim);
     }
-    my_vector reverse_res;
-    for (size_t i = res.size() - 1; i < res.size(); i--) {
-        reverse_res.push_back(res[i]);
-    }
-    big_integer result(a.sign, reverse_res);
+    reverse(res.begin(), res.end());
+    big_integer result(a.sign, res);
     if (a.sign) {
         a += 1;
         return result -= 1;
