@@ -421,7 +421,7 @@ TEST(correctness, shr_)
     big_integer a = 23;
 
     EXPECT_EQ(a >> 2, 5);
-
+    //
     a >>= 2;
     EXPECT_EQ(a, 5);
 }

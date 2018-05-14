@@ -53,10 +53,9 @@ bool big_integer::is_neg() const { return this->sign; }
 
 void big_integer::make_fit() {
     while (number.size() > 0 && ((!sign && number.back() == 0) ||
-                                 (sign && number.back() == MAX_D - 1))) {
+                                 (sign && number.back() == MAX_D))) {
         number.pop_back();
     }
-    if (number.size() == 1 && number.back() == 0) number.pop_back();
     if (number.empty()) sign = false;
 }
 
@@ -76,7 +75,7 @@ big_integer::big_integer() : sign(false) {}
 big_integer::big_integer(int a) : number((a != 0) ? 1 : 0), sign(a < 0) {
     if (a != 0) {
         if (a == INT32_MIN) {
-            number[0] = (uint)INT32_MAX + 1;
+            number[0] = (uint)a;
         } else {
             number[0] = (a < 0) ? -a : a;
         }
@@ -85,10 +84,10 @@ big_integer::big_integer(int a) : number((a != 0) ? 1 : 0), sign(a < 0) {
 
 big_integer::big_integer(uint a) : number(1), sign(false) {
     number[0] = a;
-    make_fit();
+    strip_zeroes();
 }
 
-big_integer::big_integer(bool s, vector<uint> n) : number(n), sign(s) {
+big_integer::big_integer(bool s, my_vector n) : number(n), sign(s) {
     strip_zeroes();
 }
 
@@ -127,13 +126,15 @@ big_integer::big_integer(std::string const &str) {
 //      assignment
 
 big_integer &big_integer::operator=(big_integer const &other) {
-    this->number = other.number;
+    this->number  = other.number;
     this->sign = other.sign;
     make_fit();
     return *this;
 }
 
 //      bitwise operations
+
+typedef uint (*bitwise_func_t)(uint, uint);
 
 big_integer &big_integer::operator&=(big_integer const &rhs) {
     return *this = *this & rhs;
@@ -152,9 +153,9 @@ uint do_xor(uint a, uint b) { return a ^ b; }
 uint do_and(uint a, uint b) { return a & b; }
 
 big_integer do_bitwise(big_integer a, big_integer const &b,
-                       uint (*func)(uint, uint)) {
+                       bitwise_func_t func) {
     size_t len = max(a.length(), b.length());
-    vector<uint> temporary(len);
+    my_vector temporary(len);
     size_t a_fnz = a.find_not_zero();
     size_t b_fnz = b.find_not_zero();
     for (size_t i = 0; i < len; i++) {
@@ -174,18 +175,15 @@ big_integer do_bitwise(big_integer a, big_integer const &b,
 }
 
 big_integer operator&(big_integer a, big_integer const &b) {
-    uint (*func)(uint, uint) = &do_and;
-    return do_bitwise(a, b, func);
+    return do_bitwise(a, b, do_and);
 }
 
 big_integer operator|(big_integer a, big_integer const &b) {
-    uint (*func)(uint, uint) = &do_or;
-    return do_bitwise(a, b, func);
+    return do_bitwise(a, b, do_or);
 }
 
 big_integer operator^(big_integer a, big_integer const &b) {
-    uint (*func)(uint, uint) = &do_xor;
-    return do_bitwise(a, b, func);
+    return do_bitwise(a, b, do_xor);
 }
 
 //      unary operations
@@ -304,7 +302,7 @@ big_integer operator+(big_integer a, big_integer const &b) {
         ull interim_res;
         ull carry = 0;
         size_t max_len = max(a.length(), b.length());
-        vector<uint> result(max_len, 0);
+        my_vector result(max_len);
         for (size_t i = 0; i < max_len; i++) {
             interim_res = (ull)((i < a.length()) ? a.number[i] : 0) +
                           (ull)((i < b.length()) ? b.number[i] : 0) + carry;
@@ -333,7 +331,7 @@ big_integer do_sub_saving_sign(big_integer a, big_integer const &b) {
     long long interim_res;
     ull carry = 0;
     size_t max_len = max(a.length(), b.length());
-    vector<uint> result(max_len, 0);
+    my_vector result(max_len);
     for (size_t i = 0; i < max_len; i++) {
         interim_res = (ull)((i < a.length()) ? a.number[i] : 0) -
                       (ull)((i < b.length()) ? b.number[i] : 0) - carry;
@@ -377,7 +375,7 @@ big_integer &big_integer::operator*=(big_integer const &rhs) {
     return *this = *this * rhs;
 }
 
-void mul_long_short(vector<uint> &res, vector<uint> const a, const uint b) {
+void mul_long_short(my_vector &res, my_vector const a, const uint b) {
     size_t len = a.size();
     res.resize(len + 1);
     ull carry = 0;
@@ -393,7 +391,7 @@ void mul_long_short(vector<uint> &res, vector<uint> const a, const uint b) {
         res.pop_back();
 }
 
-void mul_long_long(vector<uint> &res, vector<uint> a, vector<uint> b) {
+void mul_long_long(my_vector &res, my_vector a, my_vector b) {
     for (size_t i = 0; i < a.size(); i++) {
         for (ull j = 0, carry = 0; j < b.size() || carry; j++) {
             ull interim_res =
@@ -411,7 +409,7 @@ big_integer operator*(big_integer a, big_integer const &b) {
     if (a.length() > b.length()) {
         return b * a;
     }
-    vector<uint> temporary(a.length() + b.length() + 1);
+    my_vector temporary(a.length() + b.length() + 1);
     if (a.length() == 1) {
         mul_long_short(temporary, b.abs().number, a.abs().number[0]);
     } else {
@@ -431,9 +429,9 @@ big_integer &big_integer::operator%=(big_integer const &rhs) {
     return *this = *this % rhs;
 }
 
-void div_long_short(vector<uint> &result, vector<uint> a, uint b) {
+void div_long_short(my_vector &result, my_vector a, uint b) {
     size_t m = a.size();
-    result.resize(m + 1, 0);
+    result.resize(m + 1);
     ull carry = 0;
     for (long long i = m - 1; i >= 0; i--) {
         ull temp = carry * TRUE_BASE + a[i];
@@ -479,7 +477,7 @@ big_integer divide(big_integer const &x, big_integer const &y) {
     if (f == 0) {
         d = y << (DIGIT_CAPACITY);
     }
-    q.number.resize(n - m + 2, 0);
+    q.number.resize(n - m + 2);
     r.number.push_back(0);
     for (size_t k = n - m; k < n - m + 1; k--) {
         uint qt = trial(r, d, k, m);
@@ -499,9 +497,9 @@ big_integer divide(big_integer const &x, big_integer const &y) {
 
 big_integer operator/(big_integer a, big_integer const &b) {
     size_t m = b.length();
-    if (m == 0) throw(runtime_error("sosi"));
+    if (m == 0) throw(runtime_error("division by zero"));
     if (m == 1) {
-        vector<uint> quot;
+        my_vector quot;
         div_long_short(quot, a.number, b.number[0]);
         return big_integer(a.sign ^ b.sign, quot);
     } else {
@@ -543,8 +541,17 @@ big_integer operator<<(big_integer a, int b) {
             result.number[i] = interim;
         }
     }
-    result.number.insert(result.number.begin(), zero_digits, 0);
-    return result;
+    if (zero_digits == 0) {
+        return result;
+    }
+    my_vector z;
+    for (uint i = 0; i < zero_digits; i++) {
+        z.push_back(0);
+    }
+    for (size_t i = 0; i < result.number.size(); i++) {
+        z.push_back(result.number[i]);
+    }
+    return big_integer(result.sign, z);
 }
 
 big_integer operator>>(big_integer a, int b) {
@@ -554,7 +561,7 @@ big_integer operator>>(big_integer a, int b) {
     uint deleted_digits = b / DIGIT_CAPACITY;
     uint shift_digit = b % DIGIT_CAPACITY;
     uint carry = 0;
-    vector<uint> res;
+    my_vector res;
     for (size_t i = a.length(); i > deleted_digits; i--) {
         uint interim = (a.number[i - 1] >> shift_digit) &
                        (uint(1 << (DIGIT_CAPACITY - shift_digit)) - 1);
@@ -563,8 +570,11 @@ big_integer operator>>(big_integer a, int b) {
                 << (DIGIT_CAPACITY - shift_digit);
         res.push_back(interim);
     }
-    reverse(res.begin(), res.end());
-    big_integer result(a.sign, res);
+    my_vector reverse_res;
+    for (size_t i = res.size() - 1; i < res.size(); i--) {
+        reverse_res.push_back(res[i]);
+    }
+    big_integer result(a.sign, reverse_res);
     if (a.sign) {
         a += 1;
         return result -= 1;

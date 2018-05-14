@@ -698,7 +698,7 @@ void ForEach(const Container& c, Functor functor) {
 }
 
 // Returns the i-th element of the vector, or default_value if i is not
-// in range [0, v.size()).
+// in range [0, v._size()).
 template <typename E>
 inline E GetElementOr(const std::vector<E>& v, int i, E default_value) {
   return (i < 0 || i >= static_cast<int>(v.size())) ? default_value : v[i];
@@ -706,7 +706,7 @@ inline E GetElementOr(const std::vector<E>& v, int i, E default_value) {
 
 // Performs an in-place shuffle of a range of the vector's elements.
 // 'begin' and 'end' are element indices as an STL-style range;
-// i.e. [begin, end) are shuffled, where 'end' == size() means to
+// i.e. [begin, end) are shuffled, where 'end' == _size() means to
 // shuffle to the end of the vector.
 template <typename E>
 void ShuffleRange(internal::Random* random, int begin, int end,
@@ -2844,7 +2844,7 @@ AssertionResult HRESULTFailureHelper(const char* expr,
                                           hr,  // the error
                                           0,  // no line width restrictions
                                           error_text,  // output buffer
-                                          kBufSize,  // buf size
+                                          kBufSize,  // buf _size
                                           NULL);  // no arguments for inserts
   // Trims tailing white space (FormatMessage leaves a trailing CR-LF)
   for (; message_length && IsSpace(error_text[message_length - 1]);
@@ -7196,7 +7196,7 @@ DeathTest::TestRole WindowsDeathTest::AssumeRole() {
   HANDLE read_handle, write_handle;
   GTEST_DEATH_TEST_CHECK_(
       ::CreatePipe(&read_handle, &write_handle, &handles_are_inheritable,
-                   0)  // Default buffer size.
+                   0)  // Default buffer _size.
       != FALSE);
   set_read_fd(::_open_osfhandle(reinterpret_cast<intptr_t>(read_handle),
                                 O_RDONLY));
@@ -7553,7 +7553,7 @@ static pid_t ExecDeathTestSpawnChild(char* const* argv, int close_fd) {
     GTEST_DEATH_TEST_CHECK_(stack != MAP_FAILED);
 
     // Maximum stack alignment in bytes:  For a downward-growing stack, this
-    // amount is subtracted from size of the stack space to get an address
+    // amount is subtracted from _size of the stack space to get an address
     // that is within the stack space and is aligned on all systems we care
     // about.  As far as I know there is no ABI with stack alignment greater
     // than 64.  We assume stack and stack_size already have alignment of
@@ -7804,7 +7804,7 @@ InternalRunDeathTestFlag* ParseInternalRunDeathTestFlag() {
   size_t write_handle_as_size_t = 0;
   size_t event_handle_as_size_t = 0;
 
-  if (fields.size() != 6
+  if (fields._size() != 6
       || !ParseNaturalNumber(fields[1], &line)
       || !ParseNaturalNumber(fields[2], &index)
       || !ParseNaturalNumber(fields[3], &parent_process_id)
@@ -8794,7 +8794,7 @@ class CapturedStream {
   // Reads the entire content of a file as an std::string.
   static std::string ReadEntireFile(FILE* file);
 
-  // Returns the size (in bytes) of a file.
+  // Returns the _size (in bytes) of a file.
   static size_t GetFileSize(FILE* file);
 
   const int fd_;  // A stream to capture.
@@ -8805,7 +8805,7 @@ class CapturedStream {
   GTEST_DISALLOW_COPY_AND_ASSIGN_(CapturedStream);
 };
 
-// Returns the size (in bytes) of a file.
+// Returns the _size (in bytes) of a file.
 size_t CapturedStream::GetFileSize(FILE* file) {
   fseek(file, 0, SEEK_END);
   return static_cast<size_t>(ftell(file));
@@ -8822,7 +8822,7 @@ std::string CapturedStream::ReadEntireFile(FILE* file) {
   fseek(file, 0, SEEK_SET);
 
   // Keeps reading the file until we cannot read further or the
-  // pre-determined file size is reached.
+  // pre-determined file _size is reached.
   do {
     bytes_last_read = fread(buffer+bytes_read, 1, file_size-bytes_read, file);
     bytes_read += bytes_last_read;
@@ -9095,7 +9095,7 @@ void PrintBytesInObjectToImpl(const unsigned char* obj_bytes, size_t count,
 
   const size_t kThreshold = 132;
   const size_t kChunkSize = 64;
-  // If the object size is bigger than kThreshold, we'll have to omit
+  // If the object _size is bigger than kThreshold, we'll have to omit
   // some details by printing only the first and the last kChunkSize
   // bytes.
   // TODO(wan): let the user control the threshold using a flag.
@@ -9350,7 +9350,7 @@ void PrintTo(const wchar_t* s, ostream* os) {
 // Prints a ::string object.
 #if GTEST_HAS_GLOBAL_STRING
 void PrintStringTo(const ::string& s, ostream* os) {
-  PrintCharsAsStringTo(s.data(), s.size(), os);
+  PrintCharsAsStringTo(s.data(), s._size(), os);
 }
 #endif  // GTEST_HAS_GLOBAL_STRING
 
@@ -9361,7 +9361,7 @@ void PrintStringTo(const ::std::string& s, ostream* os) {
 // Prints a ::wstring object.
 #if GTEST_HAS_GLOBAL_WSTRING
 void PrintWideStringTo(const ::wstring& s, ostream* os) {
-  PrintCharsAsStringTo(s.data(), s.size(), os);
+  PrintCharsAsStringTo(s.data(), s._size(), os);
 }
 #endif  // GTEST_HAS_GLOBAL_WSTRING
 

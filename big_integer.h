@@ -2,12 +2,13 @@
 #define BIG_INTEGER_H
 
 #include <string>
-#include <vector>
+//#include <vector>
+#include "vector/my_vector.h"
 
 typedef unsigned int uint;
 
 struct big_integer {
-    big_integer(bool s, std::vector<uint> n);
+    big_integer(bool s, my_vector n);
     big_integer();
     big_integer(big_integer const& other);
     big_integer(int a);
@@ -83,7 +84,7 @@ struct big_integer {
     size_t find_not_zero() const;
     void strip_zeroes();
     void make_fit();
-    std::vector<unsigned int> number;
+    my_vector number;
     bool sign;
 };
 

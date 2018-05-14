@@ -1902,12 +1902,12 @@ class Secret;
 
 // The GTEST_COMPILE_ASSERT_ macro can be used to verify that a compile time
 // expression is true. For example, you could use it to verify the
-// size of a static array:
+// _size of a static array:
 //
 //   GTEST_COMPILE_ASSERT_(ARRAYSIZE(content_type_names) == CONTENT_NUM_TYPES,
 //                         content_type_names_incorrect_size);
 //
-// or to make sure a struct is smaller than a certain size:
+// or to make sure a struct is smaller than a certain _size:
 //
 //   GTEST_COMPILE_ASSERT_(sizeof(foo) < 128, foo_too_large);
 //
@@ -1957,7 +1957,7 @@ struct CompileAssert {
 //   (They seem to think the ">" in "5 > 0" marks the end of the
 //   template argument list.)
 //
-// - The array size is (bool(expr) ? 1 : -1), instead of simply
+// - The array _size is (bool(expr) ? 1 : -1), instead of simply
 //
 //     ((expr) ? 1 : -1).
 //
@@ -2952,9 +2952,9 @@ inline void Abort() { abort(); }
 const BiggestInt kMaxBiggestInt =
     ~(static_cast<BiggestInt>(1) << (8*sizeof(BiggestInt) - 1));
 
-// This template class serves as a compile-time function from size to
-// type.  It maps a size in bytes to a primitive type with that
-// size. e.g.
+// This template class serves as a compile-time function from _size to
+// type.  It maps a _size in bytes to a primitive type with that
+// _size. e.g.
 //
 //   TypeWithSize<4>::UInt
 //
@@ -2978,11 +2978,11 @@ class TypeWithSize {
   typedef void UInt;
 };
 
-// The specialization for size 4.
+// The specialization for _size 4.
 template <>
 class TypeWithSize<4> {
  public:
-  // unsigned int has size 4 in both gcc and MSVC.
+  // unsigned int has _size 4 in both gcc and MSVC.
   //
   // As base/basictypes.h doesn't compile on Windows, we cannot use
   // uint32, uint64, and etc here.
@@ -2990,7 +2990,7 @@ class TypeWithSize<4> {
   typedef unsigned int UInt;
 };
 
-// The specialization for size 8.
+// The specialization for _size 8.
 template <>
 class TypeWithSize<8> {
  public:
@@ -7191,7 +7191,7 @@ GTEST_API_ std::string GetBoolAssertionFailureMessage(
 template <typename RawType>
 class FloatingPoint {
  public:
-  // Defines the unsigned integer type that has the same size as the
+  // Defines the unsigned integer type that has the same _size as the
   // floating point number.
   typedef typename TypeWithSize<sizeof(RawType)>::UInt Bits;
 
@@ -7751,9 +7751,9 @@ class ImplicitlyConvertible {
   // implicitly converted to type To; otherwise it will pick the
   // second version.
   //
-  // The first version returns a value of size 1, and the second
-  // version returns a value of size 2.  Therefore, by checking the
-  // size of Helper(x), which can be done at compile time, we can tell
+  // The first version returns a value of _size 1, and the second
+  // version returns a value of _size 2.  Therefore, by checking the
+  // _size of Helper(x), which can be done at compile time, we can tell
   // which version of Helper() is used, and hence whether x can be
   // implicitly converted to type To.
   static char Helper(To);
@@ -19147,7 +19147,7 @@ class GTEST_API_ AssertHelper {
   void operator=(const Message& message) const;
 
  private:
-  // We put our data in a struct so that the size of the AssertHelper class can
+  // We put our data in a struct so that the _size of the AssertHelper class can
   // be as small as possible.  This is important because gcc is incapable of
   // re-using stack space even for temporary variables, so every EXPECT_EQ
   // reserves stack space for another AssertHelper.
@@ -19742,7 +19742,7 @@ AssertionResult AssertPred5Helper(const char* pred_text,
 //   EXPECT_NE(5, Foo());
 //   EXPECT_EQ(NULL, a_pointer);
 //   ASSERT_LT(i, array_size);
-//   ASSERT_GT(records.size(), 0) << "There is no record left.";
+//   ASSERT_GT(records._size(), 0) << "There is no record left.";
 
 #define EXPECT_EQ(expected, actual) \
   EXPECT_PRED_FORMAT2(::testing::internal:: \
@@ -20034,8 +20034,8 @@ bool StaticAssertTypeEq() {
 //   }
 //
 //   TEST_F(FooTest, ReturnsElementCountCorrectly) {
-//     EXPECT_EQ(0, a_.size());
-//     EXPECT_EQ(1, b_.size());
+//     EXPECT_EQ(0, a_._size());
+//     EXPECT_EQ(1, b_._size());
 //   }
 
 #define TEST_F(test_fixture, test_name)\
