@@ -22,6 +22,8 @@ struct my_vector {
     size_t size() const;
     bool empty();
 
+    void insert_zeroes_in_begin(size_t count);
+
     uint& operator[](size_t index);
     uint const& operator[](size_t index) const;
 
@@ -39,6 +41,7 @@ struct my_vector {
     void swap(my_vector& other) noexcept;
 
    private:
+    const size_t GROWTH = 2;
     static const size_t SMALL_SIZE = 4;
 
     size_t _size;

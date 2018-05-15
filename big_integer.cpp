@@ -126,7 +126,7 @@ big_integer::big_integer(std::string const &str) {
 //      assignment
 
 big_integer &big_integer::operator=(big_integer const &other) {
-    this->number  = other.number;
+    this->number = other.number;
     this->sign = other.sign;
     make_fit();
     return *this;
@@ -541,17 +541,10 @@ big_integer operator<<(big_integer a, int b) {
             result.number[i] = interim;
         }
     }
-    if (zero_digits == 0) {
-        return result;
-    }
-    my_vector z;
-    for (uint i = 0; i < zero_digits; i++) {
-        z.push_back(0);
-    }
-    for (size_t i = 0; i < result.number.size(); i++) {
-        z.push_back(result.number[i]);
-    }
-    return big_integer(result.sign, z);
+    // FAAAASTEER
+    result.number.insert_zeroes_in_begin(zero_digits);
+
+    return result;
 }
 
 big_integer operator>>(big_integer a, int b) {

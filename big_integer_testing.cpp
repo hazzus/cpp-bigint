@@ -7,6 +7,35 @@
 
 #include "big_integer.h"
 
+TEST(correctness, check_vector_push_pop) {
+    my_vector a(100);
+    a.push_back(1);
+    my_vector b(a);
+    my_vector c = b;
+
+    b.push_back(2);
+    c.pop_back();
+
+    EXPECT_FALSE(a == b);
+    EXPECT_FALSE(b == c);
+}
+
+TEST(correctness, check_vector_index) {
+    my_vector a(100);
+    a[99] = 1;
+    my_vector b(a);
+    b[98] = 2;
+    EXPECT_FALSE(a == b);
+}
+
+TEST(correctness, check_vector_zeroes_insert) {
+    my_vector a(2);
+    a[0] = 1;
+    a.insert_zeroes_in_begin(1);
+
+    EXPECT_TRUE(a.size() == 3);
+}
+
 TEST(correctness, two_plus_two) {
     EXPECT_EQ(big_integer(2) + big_integer(2), big_integer(4));
     EXPECT_EQ(big_integer(2) + 2, 4);  // implicit converion from int must work
